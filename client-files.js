@@ -6,7 +6,6 @@ const bad = 'DEC';
 const good = 'ACK';
 
 const client = new net.Socket();
-let currentIndex = -1;
 client.setEncoding('utf8');
 
 let dirs = [];
@@ -14,7 +13,6 @@ client.connect({port: port, host: '127.0.0.1'}, () => {
     let paths = process.argv;
     for (let i = 2; i < paths.length; ++i)
         dirs.push(__dirname + paths[i]);
-    //console.log(dirs);
     client.write(string);
 });
 
@@ -33,14 +31,17 @@ client.on('close', function () {
 });
 
 function sendFilesToServer() {
-    console.log(dirs);
+    let arrayOfFiles = [];
     for (let i = 0; i < dirs.length; ++i)
     {
-        fs.readFile(dirs[i], (err, text) => {
-            if (!err) client.write(text);
-            else console.error(err);
-        });
+        arrayOfFiles = fs.readdirSync(dirs[i]);
+        for (let j = 0; j < arrayOfFiles.length; ++j) {
+            console.log(dirs[i]+ '\\' + arrayOfFiles[j]);
+            let buffer = fs.readFileSync(dirs[i]+ '\\' + arrayOfFiles[j]);
+            client.write(buffer);
+        }
     }
+    client.destroy();
 }
 
 /*function sendQuestion() {
